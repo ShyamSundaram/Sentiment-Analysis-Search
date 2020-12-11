@@ -1,0 +1,537 @@
+<html>
+    <head>
+      <title>Flask App </title>
+      <!--<meta http-equiv="refresh" content="50">-->
+      <!-- Charlist-->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+      <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+      <!--Highchart-->
+      <script src="https://code.highcharts.com/highcharts.js"></script>
+
+      <!-- Bootstraps Java Scipts Links -->
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+      <style>
+        input:focus{
+          outline: none;
+        }
+        
+        input{
+          border:1px solid rgb(172, 155, 155);
+          border-radius: 30px;
+        }
+        input[type="submit"]{
+          border:0px solid rgb(226, 178, 44);
+          border-radius: 30px;
+          outline: none;
+          background-color: rgb(226, 178, 44);
+          color: cornsilk;
+        }
+        input[type="submit"]:focus{
+          background-color: rgb(177, 138, 31);
+        }
+      </style>
+
+    </head>
+
+    <body>
+      <div class="jumbotron">
+        <h1 class="display-4">Sentiment analysis</h1>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h1>Over the week</h1>
+          <p>So the graph on the right shows the overall emotional reaction over the past week.</p>
+          <p>The X axis shows the day of the week (this data is based on last week in the US)</p>
+          <p>The Y axis represents the polarity. The more positive or higher the Y coordinte, the more positive the reaction was.</p>
+          <p>The lower it is, the more negative.</p>
+          <p>The number of samples analyzed is the same for any day. For instance, on each day, 200 tweets were analyzed to provide 
+            a mean polarity score, which is then plotted up here.
+          </p>
+        </div>
+
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart1"></div>
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart2"></div>
+        </div>
+        <div class="col-md-6">
+          <h1>Trending topics</h1>
+          <p>Here, we see a collection of topics and how people respond to them. The graph on the left here shows data from India.</p>
+          <p>The legend shows the topics trending in India. Each of them are encoded with a different color.<br><br>
+            The topics are grouped together depending on the polarity of the tweets analysed. They are either: positive, neutral or negative.</p>
+          <p>Right now, there are only a handful of tweets requested and analysed. This is because Twitter API has a rate limit: for every 15 minutes.<br>
+          And during development, there are a lot of requests made to the API. So in order to avoid a 429 error, only a few are extracted.</p>
+          <p>You can hover over the bars to see the number of tweets under each topic and sentiment polarity.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6" style="max-width: 500px;margin: auto;">
+          <form>
+            <!-- <label>Country&nbsp;</label> -->
+            <input type="text" id="country" name="country" placeholder="Country, City, Country code" size=50><br><br>
+            <!-- <label>Topic&nbsp;</label> -->
+            <input type="text" id="topic" name="topic" placeholder="Topic" size=50><br><br>
+          </form>
+          <input type="submit" value="Search" onclick="search()" style="height: 30px; font-size: large; width: 100px;">
+        </div>
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart3"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart4"></div>
+        </div>
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart5"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="ct-chart ct-perfect-fourth" id="chart6"></div>
+        </div>
+      </div>
+
+      <!--<script>
+        class MyCharts{
+    
+          constructor(XData, YData,Y1, width, height)
+          {
+            this.XData = XData;
+            this.YData = YData;
+            this.y1=Y1;
+            this.height=height;
+            this.width=width;
+          }
+    
+          createlineGraph()
+          {
+            var data ={labels: this.XData,series:[this.YData,this.y1]};
+            var options={width:this.width,height:this.height};
+            new Chartist.Line('.ct-chart', data,options);
+          }
+
+          animatedLine()
+          {
+            var data ={labels: this.XData,series:[this.YData,this.y1]};
+            var options={width:this.width,height:this.height};
+            var chart = new Chartist.Line('.ct-chart', data,options,{low:0});
+
+            // Let's put a sequence number aside so we can use it in the event callbacks
+            var seq = 0, delays = 80, durations = 500;
+
+            // Once the chart is fully created we reset the sequence
+            chart.on('created', function() {
+              seq = 0;
+            });
+
+            // On each drawn element by Chartist we use the Chartist.Svg API to trigger SMIL animations
+            chart.on('draw', function(data) {
+              seq++;
+
+            if(data.type === 'line') 
+            {
+            // If the drawn element is a line we do a simple opacity fade in. This could also be achieved using CSS3 animations.
+              data.element.animate({opacity: {begin: seq * delays + 1000, dur: durations,from: 0,to: 1}});
+            }
+            else if(data.type === 'label' && data.axis === 'x')
+            {
+              data.element.animate({y: {begin: seq * delays,dur: durations,from: data.y + 100,to: data.y,easing: 'easeOutQuart'}});
+            }
+            else if(data.type === 'label' && data.axis === 'y')
+            {
+              data.element.animate({x: {begin: seq * delays,dur: durations,from: data.x - 100,to: data.x,easing: 'easeOutQuart'}});
+            }
+            else if(data.type === 'point')
+            {
+              data.element.animate({x1: {begin: seq * delays,dur: durations,from: data.x - 10,to: data.x,easing: 'easeOutQuart'},
+              x2: {begin: seq * delays,dur: durations,from: data.x - 10,to: data.x,easing: 'easeOutQuart'},
+              opacity: {begin: seq * delays,dur: durations,from: 0,to: 1,easing: 'easeOutQuart'}});
+            }
+            else if(data.type === 'grid') 
+            {
+              // Using data.axis we get x or y which we can use to construct our animation definition objects
+              var pos1Animation = {begin: seq * delays,dur: durations,from: data[data.axis.units.pos + '1'] - 30,to: data[data.axis.units.pos + '1'],
+              easing: 'easeOutQuart'};
+
+              var pos2Animation = {begin: seq * delays,dur: durations,from: data[data.axis.units.pos + '2'] - 100,to: data[data.axis.units.pos + '2'],easing: 'easeOutQuart'};
+
+              var animations = {};
+              animations[data.axis.units.pos + '1'] = pos1Animation;
+              animations[data.axis.units.pos + '2'] = pos2Animation;
+              animations['opacity'] = {
+                begin: seq * delays,
+                dur: durations,
+                from: 0,
+                to: 1,
+                easing: 'easeOutQuart'
+              };
+
+              data.element.animate(animations);
+            }
+            });
+
+            // For the sake of the example we update the chart every time it's created with a delay of 10 seconds
+            chart.on('created', function() {
+              if(window.__exampleAnimateTimeout) {
+                clearTimeout(window.__exampleAnimateTimeout);
+                window.__exampleAnimateTimeout = null;
+              }
+              window.__exampleAnimateTimeout = setTimeout(chart.update.bind(chart), 30000);
+            });
+
+            //end of animatedLine
+          }
+          
+          createBarChart()
+          {
+            var data ={labels: this.XData,series:[this.YData]};
+            var options={width:this.width,height:this.height,high: 1,low: -1};
+            new Chartist.Bar('#chart2', data,options);
+          }
+
+        }
+
+        var XData= ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        //var YData = [5, 2, 4, 2, 0];
+
+        var data = $.get('/data');
+
+        var tm=data.done(function(resp){
+          console.log(resp.x);
+          console.log(resp.y);
+          var obj=new MyCharts(resp.x,resp.y,resp.y1,800,500);
+          //obj.createlineGraph();
+          obj.animatedLine();
+        })
+
+        var data2=$.get('/data1');
+
+        var tm1=data2.done(function(resp){
+          var obj=new MyCharts(resp.x,resp.y,0,1000,500);
+          obj.createBarChart();
+        })
+
+        
+      </script>-->
+
+      <script>
+        class Chart{
+          constructor(XData,YData,width,height)
+          {
+            this.XData=XData;
+            this.YData=YData;
+            this.height=height;
+            this.width=width;
+          }
+
+          createlineGraph(country,chart_loc='chart1')
+          {
+            //var Data={ xAxis: {categories:this.XData},series:[{name: 'US',data:this.YData}]};
+            Highcharts.chart(chart_loc,{
+              title:{
+                text: 'Comparing Coutries'
+              },
+              xAxis:{
+                categories:this.XData//['A','B','O']
+              },
+              credits:{
+                enabled: false
+              },
+              series: [
+                {
+                  name:country,
+                  data: this.YData
+                }
+              ]
+            });
+
+          }
+          
+          createBars(chart_loc='chart1')
+          {
+            Highcharts.chart(chart_loc, {
+              chart: {
+                  type: 'column'
+              },
+              title: {
+                  text: 'Trends'
+              },
+              xAxis: {
+                  categories: [
+                      'Positive',
+                      'Neutral',
+                      'Negative'
+                  ],
+                  crosshair: true
+              },
+              yAxis: {
+                  min: 0,
+                  title: {
+                      text: 'Response'
+                  }
+              },
+              credits:{
+                enabled: false
+              },
+              tooltip: {
+                  headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                  pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                      '<td style="padding:0"><b>{point.y:.1f} tweets</b></td></tr>',
+                  footerFormat: '</table>',
+                  shared: true,
+                  useHTML: true
+              },
+              plotOptions: {
+                  column: {
+                      pointPadding: 0.2,
+                      borderWidth: 0
+                  }
+              },
+              series: [{
+                  name: this.XData[0],
+                  data: [this.YData[0][0],this.YData[0][1],this.YData[0][2]]
+
+              }, {
+                  name: this.XData[1],
+                  data: [this.YData[1][0],this.YData[1][1],this.YData[1][2]]
+
+              }, {
+                  name: this.XData[2],
+                  data: [this.YData[2][0],this.YData[2][1],this.YData[2][2]]
+
+              }, {
+                name: this.XData[3],
+                  data: [this.YData[3][0],this.YData[3][1],this.YData[3][2]]
+
+              }]
+          });
+          }
+
+          createScatter(data,topic,chart_loc='chart1')
+          {
+            Highcharts.chart(chart_loc, 
+            {
+              chart: {
+                  type: 'scatter',
+                  zoomType: 'xy'
+              },
+              title: {
+                  text: 'Sentiment vs Polarity'
+              },
+              xAxis: {
+                  title: {
+                      enabled: true,
+                      text: 'Subjectivity'
+                  },
+                  startOnTick: true,
+                  endOnTick: true,
+                  showLastLabel: true
+              },
+              yAxis: {
+                  title: {
+                      text: 'Polarity'
+                  }
+              },
+              legend: {
+                  layout: 'vertical',
+                  align: 'left',
+                  verticalAlign: 'top',
+                  x: 100,
+                  y: 70,
+                  floating: true,
+                  backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+                  borderWidth: 1
+              },
+              plotOptions: {
+                  scatter: {
+                      marker: {
+                          radius: 5,
+                          states: {
+                              hover: {
+                                  enabled: true,
+                                  lineColor: 'rgb(100,100,100)'
+                              }
+                          }
+                      },
+                      states: {
+                          hover: {
+                              marker: {
+                                  enabled: false
+                              }
+                          }
+                      },
+                      tooltip: {
+                          headerFormat: '<b>{series.name}</b><br>',
+                          pointFormat: '{point.x} sub, {point.y} pol'
+                      }
+                  }
+              },
+              series: [{name: topic,
+                  color: 'rgba(223, 83, 83, .5)',
+                  data: data },]
+            });
+
+          }
+        
+          createScatters(data,chart_loc='chart1')
+          {
+            Highcharts.chart(chart_loc, 
+            {
+              chart: {
+                  type: 'scatter',
+                  zoomType: 'xy'
+              },
+              title: {
+                  text: 'Sentiment vs Polarity'
+              },
+              xAxis: {
+                  title: {
+                      enabled: true,
+                      text: 'Subjectivity'
+                  },
+                  startOnTick: true,
+                  endOnTick: true,
+                  showLastLabel: true
+              },
+              yAxis: {
+                  title: {
+                      text: 'Polarity'
+                  }
+              },
+              legend: {
+                  layout: 'vertical',
+                  align: 'left',
+                  verticalAlign: 'top',
+                  x: -1,
+                  y: 1,
+                  floating: true,
+                  backgroundColor: Highcharts.defaultOptions.chart.backgroundColor,
+                  borderWidth: 1
+              },
+              plotOptions: {
+                  scatter: {
+                      marker: {
+                          radius: 5,
+                          states: {
+                              hover: {
+                                  enabled: true,
+                                  lineColor: 'rgb(100,100,100)'
+                              }
+                          }
+                      },
+                      states: {
+                          hover: {
+                              marker: {
+                                  enabled: false
+                              }
+                          }
+                      },
+                      tooltip: {
+                          headerFormat: '<b>{series.name}</b><br>',
+                          pointFormat: '{point.x} sub, {point.y} pol'
+                      }
+                  }
+              },
+              series: [
+                {name: data[0][0],
+                  color: 'rgba(223, 83, 83, .5)',
+                  data: data[0][1] ,
+                  marker: {symbol: 'circle'}},
+
+                  {name: data[1][0],
+                  color: 'rgba(252, 225, 115, 0.54)',
+                  data: data[1][1],
+                  marker: {symbol: 'circle'}},
+
+                  {name: data[2][0],
+                  color: 'rgba(115, 252, 154, 0.54)',
+                  data: data[2][1],
+                  marker: {symbol: 'circle'}},
+
+                  {name: data[3][0],
+                  color: 'rgba(195, 115, 252, 0.5)',
+                  data: data[3][1],
+                  marker: {symbol: 'circle'}}]
+            });
+
+          }
+        }
+
+        var data = $.get('/data');
+        var tm=data.done(function(resp){
+          console.log(resp.x);
+          console.log(resp.y);
+          var obj=new Chart(resp.x,resp.y,800,500);
+          obj.createlineGraph('USA','chart1');
+        })
+
+        var data2=$.get('/data2/USA');
+        var tm2=data2.done(function(resp){
+          var obj=new Chart(resp.x,resp.y,800,500);
+          obj.createBars('chart2');
+        })
+
+        var news=$.get('/news/covid');
+        var tm3=news.done(function(resp)
+        {
+          console.log('News');
+          console.log(resp.headlines[0]);
+          console.log(resp.description[0]);
+        })
+
+        console.log("Go");
+        function search()
+        {
+          var c=document.getElementById("country").value;
+          var t=document.getElementById("topic").value;
+          if(t==undefined)
+          t="covid";
+          var data=$.get('/data3/'+c+'/'+t);
+          var tm=data.done(function(resp)
+          {
+            console.log('From search');
+            console.log(resp.x);
+            console.log(resp.y);
+            var obj=new Chart(resp.x,resp.y,800,500);
+            obj.createlineGraph(c+'-'+t,'chart3');
+           
+            var obj1=new Chart(resp.l,0,800,500);
+            console.log('Data for scatter l');
+            console.log(resp.l);
+            console.log(resp.l[0]);
+            obj.createScatter(resp.l,t,'chart5');
+
+            
+          })
+
+          var data2=$.get('/data2/'+c);
+          var tm2=data2.done(function(resp)
+          {
+            var obj=new Chart(resp.x,resp.y,800,500);
+            obj.createBars('chart4');
+
+            var obj=new Chart(resp.l,0,800,500);
+            obj.createScatters(resp.l,'chart6');
+          })
+        }
+
+        
+      </script>
+
+    </body>
+</html>
